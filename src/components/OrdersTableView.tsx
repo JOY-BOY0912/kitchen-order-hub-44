@@ -1,5 +1,6 @@
-import { User, Phone, Clock } from "lucide-react";
+import { User, Clock, Hash } from "lucide-react";
 import type { Order } from "@/hooks/useOrders";
+import { formatOrderDate } from "@/hooks/useOrders";
 
 interface OrdersTableViewProps {
   orders: Order[];
@@ -15,62 +16,58 @@ const OrdersTableView = ({ orders, onConfirm }: OrdersTableViewProps) => {
             <tr className="border-b border-border">
               <th className="text-left px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Order ID</th>
               <th className="text-left px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Customer</th>
+              <th className="text-center px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Table</th>
               <th className="text-left px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Items</th>
               <th className="text-right px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Qty</th>
-              <th className="text-right px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Total</th>
               <th className="text-left px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Date & Time</th>
               <th className="text-center px-5 py-4 font-heading text-xs uppercase tracking-widest text-muted-foreground">Status</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order, index) => {
-              const isConfirmed = order.status === "CONFIRMED";
+              const isConfirmed = order.kitchen_status === "CONFIRMED";
+              const displayStatus = order.kitchen_status === "NEW" ? "PENDING" : order.kitchen_status;
               const totalQty = order.items.reduce((s, i) => s + i.quantity, 0);
 
               return (
                 <tr
-                  key={order.orderId + index}
+                  key={order.id + "-" + index}
                   className="border-b border-border/50 hover:bg-muted/30 transition-colors animate-slide-up"
                   style={{ animationDelay: `${index * 0.03}s`, animationFillMode: "backwards" }}
                 >
                   <td className="px-5 py-4 font-heading text-primary text-sm">
-                    #{order.orderId}
+                    #{order.id}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0">
                         <User className="w-3.5 h-3.5 text-muted-foreground" />
                       </div>
-                      <div>
-                        <p className="font-heading text-sm">{order.customerName}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {order.phone}
-                        </p>
-                      </div>
+                      <p className="font-heading text-sm">{order.customer_name}</p>
                     </div>
                   </td>
+                  <td className="px-5 py-4 text-center font-heading">
+                    {order.table_no}
+                  </td>
                   <td className="px-5 py-4">
-                    {order.items.map((item, i) => (
-                      <div key={i} className="text-sm">
-                        <span>{item.name}</span>
-                        <span className="text-muted-foreground ml-2">
-                          ₹{item.price} ×{item.quantity}
-                        </span>
-                        <span className="ml-2 font-medium">₹{item.total}</span>
-                      </div>
-                    ))}
+                    {order.items.length > 0 ? (
+                      order.items.map((item, i) => (
+                        <div key={i} className="text-sm">
+                          <span>{item.food_item}</span>
+                          <span className="text-muted-foreground ml-2">×{item.quantity}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground italic">No items</span>
+                    )}
                   </td>
                   <td className="px-5 py-4 text-right text-lg font-heading">
                     {totalQty}
                   </td>
-                  <td className="px-5 py-4 text-right font-heading text-primary font-medium">
-                    ₹{order.total}
-                  </td>
                   <td className="px-5 py-4 text-muted-foreground text-sm">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
-                      {order.date}
+                      {formatOrderDate(order.created_at)}
                     </span>
                   </td>
                   <td className="px-5 py-4 text-center">
@@ -79,7 +76,7 @@ const OrdersTableView = ({ orders, onConfirm }: OrdersTableViewProps) => {
                         isConfirmed ? "status-success" : "status-warning"
                       }`}
                     >
-                      {order.status}
+                      {displayStatus}
                     </span>
                     {!isConfirmed && (
                       <button
