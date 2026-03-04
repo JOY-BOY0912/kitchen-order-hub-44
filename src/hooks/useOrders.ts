@@ -1,20 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
+import { format } from "date-fns";
 
 export interface OrderItem {
-  name: string;
-  price: number;
+  food_item: string;
   quantity: number;
-  total: number;
 }
 
 export interface Order {
-  orderId: string;
-  customerName: string;
-  phone: string;
+  id: number;
+  customer_name: string;
+  table_no: number;
+  kitchen_status: string;
+  created_at: string;
   items: OrderItem[];
-  total: number;
-  status: string;
-  date: string;
 }
 
 export function useOrders() {
@@ -29,26 +27,20 @@ export function useOrders() {
       );
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
-      
-      // Normalize data - handle both array and single object
-      const normalized: Order[] = (Array.isArray(data) ? data : [data]).map((item: any) => ({
-        orderId: item.orderId || item.order_id || item.id || "",
-        customerName: item.customerName || item.customer_name || item.customer || "",
-        phone: item.phone || item.phone_number || "",
+      const list: Order[] = (Array.isArray(data) ? data : [data]).map((item: any) => ({
+        id: item.id,
+        customer_name: item.customer_name || "",
+        table_no: item.table_no || 0,
+        kitchen_status: (item.kitchen_status || "NEW").toUpperCase(),
+        created_at: item.created_at || "",
         items: Array.isArray(item.items)
           ? item.items.map((i: any) => ({
-              name: i.name || i.item || i.itemName || "",
-              price: Number(i.price) || 0,
-              quantity: Number(i.quantity) || Number(i.qty) || 1,
-              total: Number(i.total) || Number(i.price) * (Number(i.quantity) || 1),
+              food_item: i.food_item || "Unknown item",
+              quantity: Number(i.quantity) || 1,
             }))
           : [],
-        total: Number(item.total) || Number(item.totalAmount) || 0,
-        status: (item.status || "PENDING").toUpperCase(),
-        date: item.date || item.dateTime || item.created_at || "",
       }));
-      
-      setOrders(normalized);
+      setOrders(list);
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -65,20 +57,18 @@ export function useOrders() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            orderId: order.orderId,
-            customerName: order.customerName,
-            phone: order.phone,
+            id: order.id,
+            customer_name: order.customer_name,
+            table_no: order.table_no,
             items: order.items,
-            total: order.total,
+            status: "CONFIRMED",
           }),
         }
       );
       if (!res.ok) throw new Error("Failed to confirm order");
-      
-      // Update local state
       setOrders((prev) =>
         prev.map((o) =>
-          o.orderId === order.orderId ? { ...o, status: "CONFIRMED" } : o
+          o.id === order.id ? { ...o, kitchen_status: "CONFIRMED" } : o
         )
       );
     } catch (err: any) {
@@ -93,4 +83,13 @@ export function useOrders() {
   }, [fetchOrders]);
 
   return { orders, loading, error, refetch: fetchOrders, confirmOrder };
+}
+
+export function formatOrderDate(dateStr: string): string {
+  if (!dateStr) return "—";
+  try {
+    return format(new Date(dateStr), "MMM dd, hh:mm a");
+  } catch {
+    return dateStr;
+  }
 }

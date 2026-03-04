@@ -1,5 +1,6 @@
-import { User, Phone, Clock } from "lucide-react";
+import { User, Clock, Hash } from "lucide-react";
 import type { Order } from "@/hooks/useOrders";
+import { formatOrderDate } from "@/hooks/useOrders";
 
 interface OrderCardProps {
   order: Order;
@@ -8,7 +9,9 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ order, onConfirm, index }: OrderCardProps) => {
-  const isConfirmed = order.status === "CONFIRMED";
+  const isConfirmed = order.kitchen_status === "CONFIRMED";
+  const displayStatus = order.kitchen_status === "NEW" ? "PENDING" : order.kitchen_status;
+  const totalItems = order.items.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <div
@@ -18,14 +21,14 @@ const OrderCard = ({ order, onConfirm, index }: OrderCardProps) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-heading text-primary font-medium">
-          #{order.orderId}
+          #{order.id}
         </span>
         <span
           className={`px-3 py-1 rounded-full text-xs font-heading tracking-wide ${
             isConfirmed ? "status-success" : "status-warning"
           }`}
         >
-          ● {order.status}
+          ● {displayStatus}
         </span>
       </div>
 
@@ -35,43 +38,43 @@ const OrderCard = ({ order, onConfirm, index }: OrderCardProps) => {
           <User className="w-4 h-4 text-muted-foreground" />
         </div>
         <div>
-          <p className="text-sm font-heading font-medium">{order.customerName}</p>
+          <p className="text-sm font-heading font-medium">{order.customer_name}</p>
           <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Phone className="w-3 h-3" />
-            {order.phone}
+            <Hash className="w-3 h-3" />
+            Table {order.table_no}
           </p>
         </div>
       </div>
 
-      {/* Items table */}
+      {/* Items */}
       <div>
-        <div className="grid grid-cols-4 text-[10px] font-heading uppercase tracking-widest text-muted-foreground mb-2 px-1">
+        <div className="grid grid-cols-2 text-[10px] font-heading uppercase tracking-widest text-muted-foreground mb-2 px-1">
           <span>Item</span>
-          <span className="text-right">Price</span>
           <span className="text-right">Qty</span>
-          <span className="text-right">Total</span>
         </div>
-        {order.items.map((item, i) => (
-          <div
-            key={i}
-            className="grid grid-cols-4 text-sm py-1.5 px-1 border-t border-border/50"
-          >
-            <span className="font-body text-foreground">{item.name}</span>
-            <span className="text-right text-muted-foreground">₹{item.price}</span>
-            <span className="text-right text-muted-foreground">{item.quantity}</span>
-            <span className="text-right font-medium">₹{item.total}</span>
-          </div>
-        ))}
+        {order.items.length > 0 ? (
+          order.items.map((item, i) => (
+            <div
+              key={i}
+              className="grid grid-cols-2 text-sm py-1.5 px-1 border-t border-border/50"
+            >
+              <span className="font-body text-foreground">{item.food_item}</span>
+              <span className="text-right text-muted-foreground">×{item.quantity}</span>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm text-muted-foreground italic px-1">No items available</p>
+        )}
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
         <p className="text-xs text-muted-foreground flex items-center gap-1">
           <Clock className="w-3 h-3" />
-          {order.date}
+          {formatOrderDate(order.created_at)}
         </p>
         <span className="text-sm font-heading font-medium text-primary">
-          ₹{order.total}
+          {totalItems} item{totalItems !== 1 ? "s" : ""}
         </span>
       </div>
 

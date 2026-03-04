@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { LayoutGrid, List, RefreshCw, Loader2, Package } from "lucide-react";
-import DashboardNavbar from "@/components/DashboardNavbar";
 import OrderCard from "@/components/OrderCard";
 import OrdersTableView from "@/components/OrdersTableView";
 import { useOrders } from "@/hooks/useOrders";
@@ -21,49 +20,53 @@ const Index = () => {
 
   return (
     <div className="min-h-screen animate-fade-in">
-      <DashboardNavbar onRefresh={handleRefresh} refreshing={refreshing} />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Orders header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl text-foreground">Orders</h2>
-            <p className="text-sm text-muted-foreground font-body">
-              {orders.length} total orders
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+      {/* Orders Navbar */}
+      <nav
+        className="w-full px-6 py-4 flex items-center justify-between"
+        style={{
+          background: "linear-gradient(135deg, hsl(var(--primary)), hsl(140, 22%, 45%))",
+        }}
+      >
+        <div>
+          <h1 className="text-xl text-primary-foreground leading-tight">Orders</h1>
+          <p className="text-sm text-primary-foreground/70 font-body">
+            {orders.length} total orders
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-foreground/20 text-primary-foreground text-sm font-heading hover:bg-primary-foreground/30 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "smooth-spin" : ""}`} />
+            Refresh
+          </button>
+          <div className="flex rounded-lg border border-primary-foreground/30 overflow-hidden">
             <button
-              onClick={handleRefresh}
-              className="p-2.5 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+              onClick={() => setView("grid")}
+              className={`p-2.5 transition-colors ${
+                view === "grid"
+                  ? "bg-primary-foreground/30 text-primary-foreground"
+                  : "text-primary-foreground/60 hover:bg-primary-foreground/10"
+              }`}
             >
-              <RefreshCw className={`w-4 h-4 text-muted-foreground ${refreshing ? "smooth-spin" : ""}`} />
+              <LayoutGrid className="w-4 h-4" />
             </button>
-            <div className="flex rounded-lg border border-border overflow-hidden">
-              <button
-                onClick={() => setView("grid")}
-                className={`p-2.5 transition-colors ${
-                  view === "grid"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setView("table")}
-                className={`p-2.5 transition-colors ${
-                  view === "table"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              onClick={() => setView("table")}
+              className={`p-2.5 transition-colors ${
+                view === "table"
+                  ? "bg-primary-foreground/30 text-primary-foreground"
+                  : "text-primary-foreground/60 hover:bg-primary-foreground/10"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      </nav>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-20">
@@ -92,7 +95,7 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {orders.map((order, i) => (
               <OrderCard
-                key={order.orderId + i}
+                key={order.id + "-" + i}
                 order={order}
                 onConfirm={confirmOrder}
                 index={i}
