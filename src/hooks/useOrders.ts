@@ -59,7 +59,6 @@ export function useOrders() {
   const confirmOrder = useCallback(async (order: Order) => {
     try {
       const res = await fetch(API.CONFIRM_ORDER, {
-        {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
