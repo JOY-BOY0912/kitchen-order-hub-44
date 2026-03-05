@@ -67,14 +67,12 @@ const Index = () => {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 text-primary smooth-spin" />
           </div>
         )}
 
-        {/* Error */}
         {error && (
           <div className="glass-card p-6 text-center text-destructive">
             <p className="font-heading">Failed to load orders</p>
@@ -82,7 +80,6 @@ const Index = () => {
           </div>
         )}
 
-        {/* Empty */}
         {!loading && !error && orders.length === 0 && (
           <div className="glass-card p-12 text-center">
             <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
@@ -90,12 +87,11 @@ const Index = () => {
           </div>
         )}
 
-        {/* Grid View */}
         {!loading && !error && orders.length > 0 && view === "grid" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {orders.map((order, i) => (
               <OrderCard
-                key={order.id + "-" + i}
+                key={order.order_db_id + "-" + i}
                 order={order}
                 onConfirm={confirmOrder}
                 index={i}
@@ -104,7 +100,6 @@ const Index = () => {
           </div>
         )}
 
-        {/* Table View */}
         {!loading && !error && orders.length > 0 && view === "table" && (
           <OrdersTableView orders={orders} onConfirm={confirmOrder} />
         )}

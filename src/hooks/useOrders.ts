@@ -4,15 +4,19 @@ import { format } from "date-fns";
 export interface OrderItem {
   food_item: string;
   quantity: number;
+  price: number;
+  total: number;
 }
 
 export interface Order {
-  id: number;
+  order_db_id: number;
+  order_code: string;
   customer_name: string;
-  table_no: number;
-  kitchen_status: string;
-  created_at: string;
+  phone: string;
+  order_date: string;
+  status: string;
   items: OrderItem[];
+  order_total: number;
 }
 
 export function useOrders() {
@@ -23,22 +27,26 @@ export function useOrders() {
   const fetchOrders = useCallback(async () => {
     try {
       const res = await fetch(
-        "https://n8n.srv1302157.hstgr.cloud/webhook/kitchen-departmant-dashboard"
+        "https://n8n.srv1302157.hstgr.cloud/webhook/admin-dashboard-menu"
       );
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       const list: Order[] = (Array.isArray(data) ? data : [data]).map((item: any) => ({
-        id: item.id,
+        order_db_id: item.order_db_id,
+        order_code: item.order_code || "",
         customer_name: item.customer_name || "",
-        table_no: item.table_no || 0,
-        kitchen_status: (item.kitchen_status || "NEW").toUpperCase(),
-        created_at: item.created_at || "",
+        phone: item.phone || "",
+        status: (item.status || "PENDING").toUpperCase(),
+        order_date: item.order_date || "",
         items: Array.isArray(item.items)
           ? item.items.map((i: any) => ({
               food_item: i.food_item || "Unknown item",
               quantity: Number(i.quantity) || 1,
+              price: Number(i.price) || 0,
+              total: Number(i.total) || 0,
             }))
           : [],
+        order_total: Number(item.order_total) || 0,
       }));
       setOrders(list);
       setError(null);
@@ -57,18 +65,14 @@ export function useOrders() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: order.id,
-            customer_name: order.customer_name,
-            table_no: order.table_no,
-            items: order.items,
-            status: "CONFIRMED",
+            order_id: order.order_db_id,
           }),
         }
       );
       if (!res.ok) throw new Error("Failed to confirm order");
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === order.id ? { ...o, kitchen_status: "CONFIRMED" } : o
+          o.order_db_id === order.order_db_id ? { ...o, status: "CONFIRMED" } : o
         )
       );
     } catch (err: any) {
