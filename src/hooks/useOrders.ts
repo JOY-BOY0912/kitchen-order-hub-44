@@ -27,9 +27,7 @@ export function useOrders() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch(
-        "https://n8n.srv1302157.hstgr.cloud/webhook/admin-dashboard-menu"
-      );
+      const res = await fetch(API.GET_ORDERS);
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       const list: Order[] = (Array.isArray(data) ? data : [data]).map((item: any) => ({
