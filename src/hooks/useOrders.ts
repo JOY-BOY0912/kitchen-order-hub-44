@@ -58,8 +58,7 @@ export function useOrders() {
 
   const confirmOrder = useCallback(async (order: Order) => {
     try {
-      const res = await fetch(
-        "https://n8n.srv1302157.hstgr.cloud/webhook/confirm-order",
+      const res = await fetch(API.CONFIRM_ORDER, {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
